@@ -1,4 +1,8 @@
 #include "main.h"
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <ctype.h>
 
 /**
  * get_precision - gets the precision from the format string
@@ -8,23 +12,41 @@
  *
  * Return: new pointer
  */
-char *get_precision(char *p, params_t *params, va_list ap)
+int get_precision(const char *format, va_list args)
 {
-	int d = 0;
+    int precision = -1;
+    const char *p = format;
+    bool var_precision = false;
 
-	if (*p != '.')
-		return (p);
-	p++;
-	if (*p == '*')
+    while (*p != '\0')
+    {
+        if (*p == '.')
 	{
-		d = va_arg(ap, int);
-		p++;
-	}
+            p++;
+            if (*p == '*')
+	    {
+                precision = va_arg(args, int);
+                var_precision = true;
+                p++;
+            }
+	    else if (isdigit(*p))
+	    {
+                precision = strtol(p, (char**)&p, 10);
+            }
+	    else
+	    {
+                precision = 0;
+            }
+            break;
+        }
 	else
 	{
-		while (_isdigit(*p))
-			d = d * 10 + (*p++ - '0');
-	}
-	params->precision = d;
-	return (p);
+            p++;
+        }
+    }
+    if (!var_precision && precision == -1)
+    {
+        precision = 0;
+    }
+    return precision;
 }
